@@ -1,77 +1,61 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
-import { AuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 
-const prisma = new PrismaClient();
-
-export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+const handler = NextAuth({
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
+        // Here you would typically check the credentials against your database
+        if (credentials?.email === "user@example.com" && credentials?.password === "password") {
+          return {
+            id: "1",
+            name: "Demo User",
+            email: "user@example.com",
+            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop"
+          };
         }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-
-        if (!user || !user.password) {
-          return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-        };
-      },
+        return null;
+      }
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID || "",
+      clientSecret: process.env.GITHUB_SECRET || "",
     }),
   ],
   pages: {
-    signIn: "/sign-in",
+    signIn: '/auth/signin',
+    signOut: '/auth/signout',
+    error: '/auth/error',
+  },
+  callbacks: {
+    async session({ session, token }) {
+      // Send properties to the client, like an access token from a provider
+      session.user.id = token.sub;
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    }
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
-  callbacks: {
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.sub as string;
-      }
-      return session;
-    },
-  },
-};
+});
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };

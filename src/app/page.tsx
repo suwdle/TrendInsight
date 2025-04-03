@@ -248,7 +248,7 @@ export default async function Home() {
           
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center">
             <div className="text-slate-600 dark:text-slate-400 text-sm mb-4 md:mb-0">
-              © 2024 TrendInsight. All rights reserved.
+              © 2025 TrendInsight. All rights reserved.
             </div>
             <div className="flex space-x-6">
               {["Twitter", "LinkedIn", "Instagram", "GitHub"].map((social, i) => (
