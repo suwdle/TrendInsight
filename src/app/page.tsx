@@ -168,7 +168,7 @@ export default async function Home() {
               </div>
               <div className="lg:w-1/3 relative">
                 <div className="aspect-[4/3] w-full relative rounded-xl overflow-hidden shadow-sm">
-                  <Image 
+        <Image
                     src="https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=1400&auto=format&fit=crop" 
                     alt="TrendInsight App" 
                     fill
@@ -239,7 +239,7 @@ export default async function Home() {
                       >
                         {link.name}
                       </Link>
-                    </li>
+          </li>
                   ))}
                 </ul>
               </div>
